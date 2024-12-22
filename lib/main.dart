@@ -11,6 +11,12 @@ class MyApp extends StatelessWidget {
         home: Scaffold(
       appBar: AppBar(
         title: Text("BusBuddy"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.person),
+            onPressed: () {},
+          )
+        ],
       ),
     ));
   }
