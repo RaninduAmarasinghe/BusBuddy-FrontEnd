@@ -19,33 +19,98 @@ class MainPage extends StatelessWidget {
       ),
       body: Container(
         child: Column(
-          //3
           children: [
             Row(
-              //3
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly, // Ensures spacing
+              // First Row
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Column(
-                  //2
                   children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      child: Image(
-                        image: AssetImage("assets/shedule.png"),
+                    InkWell(
+                      onTap: () {
+                        print("Schedule clicked");
+                      },
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        child: Image(
+                          image: AssetImage("assets/shedule.png"),
+                        ),
                       ),
                     ),
-                    Text("Schedule"), // Fixed typo
+                    Text("Schedule"),
                   ],
                 ),
                 Column(
                   children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      child: Image(
-                        image: AssetImage("assets/location.png"),
+                    InkWell(
+                      onTap: () {
+                        print("Active Buses clicked");
+                      },
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        child: Image(
+                          image: AssetImage("assets/activebus.png"),
+                        ),
+                      ),
+                    ),
+                    Text("Active Buses"),
+                  ],
+                ),
+                Column(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        print("Bus clicked");
+                      },
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        child: Image(
+                          image: AssetImage("assets/bus.png"),
+                        ),
+                      ),
+                    ),
+                    Text("Bus"),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 20), // Add spacing between rows
+            Row(
+              // Second Row
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        print("Schedule clicked");
+                      },
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        child: Image(
+                          image: AssetImage("assets/shedule.png"),
+                        ),
+                      ),
+                    ),
+                    Text("Schedule"),
+                  ],
+                ),
+                Column(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        print("Location clicked");
+                      },
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        child: Image(
+                          image: AssetImage("assets/location.png"),
+                        ),
                       ),
                     ),
                     Text("Location"),
@@ -53,11 +118,16 @@ class MainPage extends StatelessWidget {
                 ),
                 Column(
                   children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      child: Image(
-                        image: AssetImage("assets/bus.png"),
+                    InkWell(
+                      onTap: () {
+                        print("Bus clicked");
+                      },
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        child: Image(
+                          image: AssetImage("assets/bus.png"),
+                        ),
                       ),
                     ),
                     Text("Bus"),
