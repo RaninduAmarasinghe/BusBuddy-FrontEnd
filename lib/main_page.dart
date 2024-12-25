@@ -58,23 +58,6 @@ class MainPage extends StatelessWidget {
                     Text("Active Buses"),
                   ],
                 ),
-                Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        print("Bus clicked");
-                      },
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        child: Image(
-                          image: AssetImage("assets/bus.png"),
-                        ),
-                      ),
-                    ),
-                    Text("Bus"),
-                  ],
-                ),
               ],
             ),
             SizedBox(height: 20), // Add spacing between rows
@@ -92,11 +75,11 @@ class MainPage extends StatelessWidget {
                         width: 100,
                         height: 100,
                         child: Image(
-                          image: AssetImage("assets/shedule.png"),
+                          image: AssetImage("assets/help-desk.png"),
                         ),
                       ),
                     ),
-                    Text("Schedule"),
+                    Text("Help & Support"),
                   ],
                 ),
                 Column(
@@ -109,28 +92,11 @@ class MainPage extends StatelessWidget {
                         width: 100,
                         height: 100,
                         child: Image(
-                          image: AssetImage("assets/location.png"),
+                          image: AssetImage("assets/information.png"),
                         ),
                       ),
                     ),
-                    Text("Location"),
-                  ],
-                ),
-                Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        print("Bus clicked");
-                      },
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        child: Image(
-                          image: AssetImage("assets/bus.png"),
-                        ),
-                      ),
-                    ),
-                    Text("Bus"),
+                    Text("About Us"),
                   ],
                 ),
               ],

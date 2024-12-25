@@ -62,6 +62,8 @@ flutter:
     - assets/location.png
     - assets/shedule.png
     - assets/activebus.png
+    - assets/help-desk.png
+    - assets/information.png
   #
 
   # An image asset can refer to one or more resolution-specific "variants", see
