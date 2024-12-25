@@ -17,8 +17,56 @@ class MainPage extends StatelessWidget {
         ),
         actions: [IconButton(icon: Icon(Icons.person), onPressed: () {})],
       ),
-      body: const Center(
-        child: Text("Welcome to Bus Buddy"),
+      body: Container(
+        child: Column(
+          //3
+          children: [
+            Row(
+              //3
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceEvenly, // Ensures spacing
+              children: [
+                Column(
+                  //2
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      child: Image(
+                        image: AssetImage("assets/shedule.png"),
+                      ),
+                    ),
+                    Text("Schedule"), // Fixed typo
+                  ],
+                ),
+                Column(
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      child: Image(
+                        image: AssetImage("assets/location.png"),
+                      ),
+                    ),
+                    Text("Location"),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      child: Image(
+                        image: AssetImage("assets/bus.png"),
+                      ),
+                    ),
+                    Text("Bus"),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
