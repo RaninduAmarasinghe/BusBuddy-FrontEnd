@@ -1,3 +1,4 @@
+import 'package:busbuddy_frontend/Driver/login.dart';
 import 'package:flutter/material.dart';
 
 class MainPage extends StatelessWidget {
@@ -15,7 +16,14 @@ class MainPage extends StatelessWidget {
             image: AssetImage("assets/bus.png"),
           ),
         ),
-        actions: [IconButton(icon: Icon(Icons.person), onPressed: () {})],
+        actions: [
+          IconButton(
+              icon: Icon(Icons.person),
+              onPressed: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Login()));
+              })
+        ],
       ),
       body: Container(
         child: Column(
@@ -30,7 +38,7 @@ class MainPage extends StatelessWidget {
                       onTap: () {
                         print("Schedule clicked");
                       },
-                      child: Container(
+                      child: SizedBox(
                         width: 100,
                         height: 100,
                         child: Image(
@@ -47,7 +55,7 @@ class MainPage extends StatelessWidget {
                       onTap: () {
                         print("Active Buses clicked");
                       },
-                      child: Container(
+                      child: SizedBox(
                         width: 100,
                         height: 100,
                         child: Image(
@@ -71,7 +79,7 @@ class MainPage extends StatelessWidget {
                       onTap: () {
                         print("Schedule clicked");
                       },
-                      child: Container(
+                      child: SizedBox(
                         width: 100,
                         height: 100,
                         child: Image(
@@ -88,7 +96,7 @@ class MainPage extends StatelessWidget {
                       onTap: () {
                         print("Location clicked");
                       },
-                      child: Container(
+                      child: SizedBox(
                         width: 100,
                         height: 100,
                         child: Image(
