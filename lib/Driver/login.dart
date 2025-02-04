@@ -1,3 +1,4 @@
+import 'package:busbuddy_frontend/Driver/components/mytextfield.dart';
 import 'package:busbuddy_frontend/main_page.dart';
 import 'package:flutter/material.dart';
 
@@ -35,15 +36,10 @@ class Login extends StatelessWidget {
 
             const SizedBox(height: 25),
             //username
-            TextField(
-              decoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey.shade400),
-                  )),
-            ),
+            MyTextField(),
+            const SizedBox(height: 10),
+            //password
+            MyTextField(),
           ],
         ),
       )),
