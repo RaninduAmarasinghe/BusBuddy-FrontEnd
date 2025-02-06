@@ -3,8 +3,12 @@ import 'package:busbuddy_frontend/main_page.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatelessWidget {
-  const Login({super.key});
+  Login({super.key});
 
+//text editing controllers
+
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,10 +40,18 @@ class Login extends StatelessWidget {
 
             const SizedBox(height: 25),
             //username
-            MyTextField(),
+            MyTextField(
+              controller: usernameController,
+              hintText: "Username",
+              obsecureText: false,
+            ),
             const SizedBox(height: 10),
             //password
-            MyTextField(),
+            MyTextField(
+              controller: passwordController,
+              hintText: "Password",
+              obsecureText: true,
+            ),
           ],
         ),
       )),
