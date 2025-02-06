@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:busbuddy_frontend/Driver/login.dart';
 import 'package:flutter/material.dart';
 
@@ -7,107 +8,110 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // Makes AppBar background blend with body
       appBar: AppBar(
-        title: Text("Bus Buddy"),
-        centerTitle: true,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 15),
-          child: Image(
-            image: AssetImage("assets/bus.png"),
+        title: const Text(
+          "Bus Buddy",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white.withOpacity(0.8),
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 15),
+          child: Image.asset("assets/bus.png"),
         ),
         actions: [
           IconButton(
-              icon: Icon(Icons.person),
-              onPressed: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => Login()));
-              })
+            icon: const Icon(Icons.person, color: Colors.black87, size: 28),
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Login()));
+            },
+          ),
         ],
       ),
-      body: Container(
-        child: Column(
-          children: [
-            Row(
-              // First Row
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.blue.shade50, Colors.white],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 100, left: 20, right: 20),
+            child: GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
               children: [
-                Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        print("Schedule clicked");
-                      },
-                      child: SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: Image(
-                          image: AssetImage("assets/shedule.png"),
-                        ),
-                      ),
-                    ),
-                    Text("Schedule"),
-                  ],
-                ),
-                Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        print("Active Buses clicked");
-                      },
-                      child: SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: Image(
-                          image: AssetImage("assets/activebus.png"),
-                        ),
-                      ),
-                    ),
-                    Text("Active Buses"),
-                  ],
-                ),
+                _buildMenuItem("assets/shedule.png", "Schedule", () {
+                  print("Schedule clicked");
+                }),
+                _buildMenuItem("assets/activebus.png", "Active Buses", () {
+                  print("Active Buses clicked");
+                }),
+                _buildMenuItem("assets/help-desk.png", "Help & Support", () {
+                  print("Help & Support clicked");
+                }),
+                _buildMenuItem("assets/information.png", "About Us", () {
+                  print("About Us clicked");
+                }),
               ],
             ),
-            SizedBox(height: 20), // Add spacing between rows
-            Row(
-              // Second Row
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        print("Schedule clicked");
-                      },
-                      child: SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: Image(
-                          image: AssetImage("assets/help-desk.png"),
-                        ),
-                      ),
-                    ),
-                    Text("Help & Support"),
-                  ],
-                ),
-                Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        print("Location clicked");
-                      },
-                      child: SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: Image(
-                          image: AssetImage("assets/information.png"),
-                        ),
-                      ),
-                    ),
-                    Text("About Us"),
-                  ],
-                ),
-              ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(String imagePath, String title, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 10,
+              spreadRadius: 2,
+              offset: const Offset(4, 4),
+            ),
+            BoxShadow(
+              color: Colors.white,
+              blurRadius: 5,
+              spreadRadius: -5,
+              offset: const Offset(-4, -4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Image.asset(imagePath, width: 70, height: 70),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
           ],
         ),
