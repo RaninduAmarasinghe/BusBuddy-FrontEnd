@@ -1,3 +1,4 @@
+import 'package:busbuddy_frontend/Driver/components/my_button.dart';
 import 'package:busbuddy_frontend/Driver/components/mytextfield.dart';
 import 'package:busbuddy_frontend/main_page.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,10 @@ class Login extends StatelessWidget {
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+
+  //sign user in method
+
+  void signUserIn() {}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,6 +56,12 @@ class Login extends StatelessWidget {
               controller: passwordController,
               hintText: "Password",
               obsecureText: true,
+            ),
+
+            //Login button
+            const SizedBox(height: 25),
+            MyButton(
+              onTap: signUserIn,
             ),
           ],
         ),
