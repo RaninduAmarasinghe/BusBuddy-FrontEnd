@@ -1,5 +1,5 @@
-import 'package:busbuddy_frontend/Driver/components/my_button.dart';
-import 'package:busbuddy_frontend/Driver/components/mytextfield.dart';
+import 'package:busbuddy_frontend/components/my_button.dart';
+import 'package:busbuddy_frontend/components/mytextfield.dart';
 import 'package:busbuddy_frontend/main_page.dart';
 import 'package:flutter/material.dart';
 
