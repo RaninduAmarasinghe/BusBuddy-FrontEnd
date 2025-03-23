@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:busbuddy_frontend/Driver/buses_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -8,8 +11,59 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String companyName = "BusBuddy Co.";
-  String driverName = "John Doe";
+  String companyName = "";
+  String driverName = "";
+  String companyId = ""; // Store company ID
+
+  // Example: Login API endpoint for driver authentication
+  Future<void> fetchDriverData(
+      String driverEmail, String driverPassword) async {
+    final response = await http.post(
+      Uri.parse('http://localhost:8080/driver/login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'driverEmail': driverEmail,
+        'driverPassword': driverPassword,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body);
+      setState(() {
+        companyName = data['companyName']; // Use companyName from the response
+        driverName = data['driverName']; // Use driverName from the response
+        companyId = data['companyId']; // Get company ID from response
+      });
+    } else {
+      print('Failed to login: ${response.body}');
+      setState(() {
+        companyName = 'Error fetching data';
+        driverName = 'Error';
+      });
+    }
+  }
+
+  // Fetching buses by company ID (you can call this after login)
+  Future<void> fetchBusesByCompany(String companyId) async {
+    final response = await http.get(
+      Uri.parse('http://localhost:8080/bus/company/$companyId'),
+    );
+
+    if (response.statusCode == 200) {
+      List buses = json.decode(response.body);
+      print(buses); // Print the list of buses
+    } else {
+      print('Failed to fetch buses: ${response.body}');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDriverData('dr@gmail.com', 'password123'); // Example login credentials
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +94,9 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      companyName,
+                      companyName.isEmpty
+                          ? 'Loading...'
+                          : companyName, // Show loading text
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
@@ -49,7 +105,9 @@ class _HomePageState extends State<HomePage> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      "Hi, $driverName",
+                      driverName.isEmpty
+                          ? 'Loading...'
+                          : "Hi, $driverName", // Show loading text
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.black54,
@@ -78,13 +136,19 @@ class _HomePageState extends State<HomePage> {
                     label: "Profile",
                     onTap: () {
                       // Navigate to Profile page
+                      print("Profile button clicked");
                     },
                   ),
                   _buildCardButton(
                     icon: Icons.directions_bus,
                     label: "Buses",
                     onTap: () {
-                      // Navigate to Buses page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BusesPage(companyId: companyId),
+                        ),
+                      );
                     },
                   ),
                   _buildCardButton(
@@ -92,6 +156,7 @@ class _HomePageState extends State<HomePage> {
                     label: "Notifications",
                     onTap: () {
                       // Navigate to Notifications page
+                      print("Notifications button clicked");
                     },
                   ),
                   _buildCardButton(
@@ -99,6 +164,7 @@ class _HomePageState extends State<HomePage> {
                     label: "Messages",
                     onTap: () {
                       // Navigate to Messages page
+                      print("Messages button clicked");
                     },
                   ),
                 ],
