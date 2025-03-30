@@ -1,13 +1,12 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:busbuddy_frontend/components/my_button.dart';
 import 'package:busbuddy_frontend/components/mytextfield.dart';
 import 'package:busbuddy_frontend/main_page.dart';
 import 'package:busbuddy_frontend/Driver/home_page.dart';
-import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
-  // Change this to StatefulWidget
   const Login({super.key});
 
   @override
@@ -20,8 +19,7 @@ class _LoginState extends State<Login> {
 
   // Function to make POST request for driver login
   Future<void> loginDriver() async {
-    final url = Uri.parse(
-        'http://localhost:8080/driver/login'); // URL of your Spring Boot backend
+    final url = Uri.parse('http://localhost:8080/driver/login'); // URL of your Spring Boot backend
 
     final body = jsonEncode({
       'driverEmail': usernameController.text,
@@ -35,16 +33,60 @@ class _LoginState extends State<Login> {
 
       if (response.statusCode == 200) {
         print('Login successful');
-        // Navigate to the next page after successful login
+
+        // Parse the response body and extract the necessary data
+        var data = jsonDecode(response.body);
+        String companyId = data['companyId'];
+        String companyName = data['companyName'];
+        String driverName = data['driverName'];
+
+        // Navigate to HomePage with the extracted data
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(
+            builder: (context) => HomePage(
+              companyId: companyId,
+              companyName: companyName,
+              driverName: driverName,
+            ),
+          ),
         );
       } else {
+        // Show error dialog if login fails
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Login Failed"),
+            content: Text("Invalid email or password"),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
+            ],
+          ),
+        );
         print('Invalid email or password');
-        // Optionally show an alert dialog to the user
       }
     } catch (e) {
+      // Show error dialog if there is a network issue or any exception
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Error"),
+          content: Text("Something went wrong. Please try again later."),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        ),
+      );
       print('Error: $e');
     }
   }
@@ -90,7 +132,7 @@ class _LoginState extends State<Login> {
               ),
               const SizedBox(height: 25),
               MyButton(
-                onTap: loginDriver,
+                onTap: loginDriver, // Trigger login function on tap
               ),
             ],
           ),

@@ -1,70 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:busbuddy_frontend/Driver/buses_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String companyId;
+  final String companyName;
+  final String driverName;
+
+  const HomePage({
+    super.key,
+    required this.companyId,
+    required this.companyName,
+    required this.driverName,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  String companyName = "";
-  String driverName = "";
-  String companyId = ""; // Store company ID
-
-  // Example: Login API endpoint for driver authentication
-  Future<void> fetchDriverData(
-      String driverEmail, String driverPassword) async {
-    final response = await http.post(
-      Uri.parse('http://localhost:8080/driver/login'),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'driverEmail': driverEmail,
-        'driverPassword': driverPassword,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      var data = json.decode(response.body);
-      setState(() {
-        companyName = data['companyName']; // Use companyName from the response
-        driverName = data['driverName']; // Use driverName from the response
-        companyId = data['companyId']; // Get company ID from response
-      });
-    } else {
-      print('Failed to login: ${response.body}');
-      setState(() {
-        companyName = 'Error fetching data';
-        driverName = 'Error';
-      });
-    }
-  }
-
-  // Fetching buses by company ID (you can call this after login)
-  Future<void> fetchBusesByCompany(String companyId) async {
-    final response = await http.get(
-      Uri.parse('http://localhost:8080/bus/company/$companyId'),
-    );
-
-    if (response.statusCode == 200) {
-      List buses = json.decode(response.body);
-      print(buses); // Print the list of buses
-    } else {
-      print('Failed to fetch buses: ${response.body}');
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchDriverData('dr@gmail.com', 'password123'); // Example login credentials
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,7 +30,7 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Top Section
+            // Top Section (Company and Driver Info)
             Container(
               height: 180,
               decoration: BoxDecoration(
@@ -94,9 +47,9 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      companyName.isEmpty
+                      widget.companyName.isEmpty
                           ? 'Loading...'
-                          : companyName, // Show loading text
+                          : widget.companyName,
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
@@ -105,9 +58,9 @@ class _HomePageState extends State<HomePage> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      driverName.isEmpty
+                      widget.driverName.isEmpty
                           ? 'Loading...'
-                          : "Hi, $driverName", // Show loading text
+                          : "Hi, ${widget.driverName}",
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.black54,
@@ -121,7 +74,7 @@ class _HomePageState extends State<HomePage> {
             // Spacer
             SizedBox(height: 30),
 
-            // Buttons Section
+            // Buttons Section (Grid of actions)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: GridView.count(
@@ -135,7 +88,7 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.account_circle,
                     label: "Profile",
                     onTap: () {
-                      // Navigate to Profile page
+                      // Navigate to Profile Page (Add Profile page later)
                       print("Profile button clicked");
                     },
                   ),
@@ -146,7 +99,8 @@ class _HomePageState extends State<HomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => BusesPage(companyId: companyId),
+                          builder: (context) =>
+                              BusesPage(companyId: widget.companyId),
                         ),
                       );
                     },
@@ -155,16 +109,16 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.notifications,
                     label: "Notifications",
                     onTap: () {
-                      // Navigate to Notifications page
                       print("Notifications button clicked");
+                      // Navigate to Notifications page
                     },
                   ),
                   _buildCardButton(
                     icon: Icons.message,
                     label: "Messages",
                     onTap: () {
-                      // Navigate to Messages page
                       print("Messages button clicked");
+                      // Navigate to Messages page
                     },
                   ),
                 ],

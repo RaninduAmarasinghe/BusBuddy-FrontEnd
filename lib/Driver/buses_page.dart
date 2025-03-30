@@ -13,6 +13,8 @@ class BusesPage extends StatefulWidget {
 
 class _BusesPageState extends State<BusesPage> {
   List<dynamic> buses = [];
+  bool isLoading = true;
+  bool hasError = false;
 
   @override
   void initState() {
@@ -22,18 +24,28 @@ class _BusesPageState extends State<BusesPage> {
 
   Future<void> fetchBuses() async {
     try {
-      final url = Uri.parse('http://localhost:8080/buses/${widget.companyId}');
+      final url =
+          Uri.parse('http://localhost:8080/bus/company/${widget.companyId}');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         setState(() {
           buses = jsonDecode(response.body);
+          isLoading = false;
         });
       } else {
-        print('Failed to load buses');
+        print('Failed to load buses: ${response.statusCode}');
+        setState(() {
+          hasError = true;
+          isLoading = false;
+        });
       }
     } catch (e) {
       print('Error: $e');
+      setState(() {
+        hasError = true;
+        isLoading = false;
+      });
     }
   }
 
@@ -44,22 +56,29 @@ class _BusesPageState extends State<BusesPage> {
         title: const Text('Company Buses'),
         centerTitle: true,
       ),
-      body: buses.isEmpty
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: buses.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: const EdgeInsets.all(8),
-                  child: ListTile(
-                    leading:
-                        const Icon(Icons.directions_bus, color: Colors.blue),
-                    title: Text(buses[index]['busNumber']),
-                    subtitle: Text('Route: ${buses[index]['routeName']}'),
-                  ),
-                );
-              },
-            ),
+          : hasError
+              ? const Center(child: Text("Failed to fetch buses. Try again."))
+              : buses.isEmpty
+                  ? const Center(
+                      child: Text("No buses available for this company."))
+                  : ListView.builder(
+                      itemCount: buses.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          margin: const EdgeInsets.all(8),
+                          child: ListTile(
+                            leading: const Icon(Icons.directions_bus,
+                                color: Colors.blue),
+                            title: Text(
+                                "Bus Number: ${buses[index]['busNumber']}"),
+                            subtitle:
+                                Text("Route: ${buses[index]['routeName']}"),
+                          ),
+                        );
+                      },
+                    ),
     );
   }
 }
