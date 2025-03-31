@@ -1,5 +1,6 @@
-import 'package:busbuddy_frontend/Driver/login.dart';
 import 'package:flutter/material.dart';
+import 'package:busbuddy_frontend/Driver/login.dart';
+import 'active_buses_page.dart'; // Import Active Buses Page
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -7,7 +8,7 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // Makes AppBar background blend with body
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
           "Bus Buddy",
@@ -49,24 +50,45 @@ class MainPage extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 100, left: 20, right: 20),
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20,
-              children: [
-                _buildMenuItem("assets/shedule.png", "Schedule", () {
-                  print("Schedule clicked");
-                }),
-                _buildMenuItem("assets/activebus.png", "Active Buses", () {
-                  print("Active Buses clicked");
-                }),
-                _buildMenuItem("assets/help-desk.png", "Help & Support", () {
-                  print("Help & Support clicked");
-                }),
-                _buildMenuItem("assets/information.png", "About Us", () {
-                  print("About Us clicked");
-                }),
-              ],
+            child: GridView.builder(
+              itemCount: 4,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 20,
+                mainAxisSpacing: 20,
+                childAspectRatio:
+                    1.0, // Ensures the tiles have equal height and width
+              ),
+              itemBuilder: (context, index) {
+                switch (index) {
+                  case 0:
+                    return _buildMenuItem("assets/shedule.png", "Schedule", () {
+                      print("Schedule clicked");
+                    });
+                  case 1:
+                    return _buildMenuItem(
+                        "assets/activebus.png", "Active Buses", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ActiveBusesPage(),
+                        ),
+                      );
+                    });
+                  case 2:
+                    return _buildMenuItem(
+                        "assets/help-desk.png", "Help & Support", () {
+                      print("Help & Support clicked");
+                    });
+                  case 3:
+                    return _buildMenuItem("assets/information.png", "About Us",
+                        () {
+                      print("About Us clicked");
+                    });
+                  default:
+                    return Container();
+                }
+              },
             ),
           ),
         ],
@@ -106,6 +128,7 @@ class MainPage extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
