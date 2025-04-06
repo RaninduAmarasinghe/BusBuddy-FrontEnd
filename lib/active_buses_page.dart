@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-// Import the missing BusDetailPage
 
 class ActiveBusesPage extends StatefulWidget {
   const ActiveBusesPage({super.key});
@@ -20,27 +19,22 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
   }
 
   Future<void> fetchActiveBuses() async {
-    final url = Uri.parse('http://localhost:8080/bus/active');
+    final url = Uri.parse('http://192.168.8.102:8080/bus/active');
     try {
       final response = await http.get(url);
-
       if (response.statusCode == 200) {
         setState(() {
           activeBuses =
               List<Map<String, dynamic>>.from(jsonDecode(response.body));
         });
       } else {
-        setState(() {
-          activeBuses = [];
-        });
+        setState(() => activeBuses = []);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to fetch active buses")),
         );
       }
     } catch (e) {
-      setState(() {
-        activeBuses = [];
-      });
+      setState(() => activeBuses = []);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
@@ -59,11 +53,26 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                 itemCount: activeBuses.length,
                 itemBuilder: (context, index) {
                   final bus = activeBuses[index];
-                  return ListTile(
-                    title: Text("Bus ${bus['busNumber']}"),
-                    subtitle: Text("Route: ${bus['routeName']}"),
-                    trailing: Text(bus['status'],
-                        style: TextStyle(color: Colors.green)),
+                  final route = (bus['routes'] as List?)?.isNotEmpty == true
+                      ? bus['routes'][0]
+                      : null;
+
+                  return Card(
+                    margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: ListTile(
+                      title: Text("Bus Number: ${bus['busNumber'] ?? 'N/A'}"),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              "Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
+                          Text("From ${route?['startPoint'] ?? '-'} "
+                              "to ${route?['endPoint'] ?? '-'}"),
+                        ],
+                      ),
+                      trailing: Text(bus['status'] ?? '',
+                          style: TextStyle(color: Colors.green)),
+                    ),
                   );
                 },
               ),

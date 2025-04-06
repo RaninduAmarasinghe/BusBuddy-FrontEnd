@@ -18,7 +18,7 @@ class BusesPage extends StatefulWidget {
 }
 
 class _BusesPageState extends State<BusesPage> {
-  static const String baseUrl = 'http://192.168.8.102:8080'; // 👈 Your local IP
+  static const String baseUrl = 'http://192.168.8.102:8080'; // My ip
   Map<String, dynamic>? busDetails;
   bool isRunning = false;
 

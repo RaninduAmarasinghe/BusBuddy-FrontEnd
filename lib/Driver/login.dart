@@ -20,7 +20,7 @@ class _LoginState extends State<Login> {
   // Function to make POST request for driver login
   Future<void> loginDriver() async {
     final url = Uri.parse(
-        'http://localhost:8080/driver/login'); // URL of your Spring Boot backend
+        'http://192.168.8.102:8080/driver/login'); // Replace with your IP
 
     final body = jsonEncode({
       'driverEmail': usernameController.text,
@@ -40,7 +40,7 @@ class _LoginState extends State<Login> {
         String companyId = data['companyId'];
         String companyName = data['companyName'];
         String driverName = data['driverName'];
-        String busId = data['busId']; // Changed from busNumber to busId
+        String busId = data['busId'];
 
         // Navigate to HomePage with the extracted data
         Navigator.push(
@@ -50,22 +50,19 @@ class _LoginState extends State<Login> {
               companyId: companyId,
               companyName: companyName,
               driverName: driverName,
-              busId: busId, // Changed from busNumber to busId
+              busId: busId,
             ),
           ),
         );
       } else {
-        // Show error dialog if login fails
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: Text("Login Failed"),
             content: Text("Invalid email or password"),
-            actions: <Widget>[
+            actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+                onPressed: () => Navigator.of(context).pop(),
                 child: Text("OK"),
               ),
             ],
@@ -74,17 +71,14 @@ class _LoginState extends State<Login> {
         print('Invalid email or password');
       }
     } catch (e) {
-      // Show error dialog if there is a network issue or any exception
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text("Error"),
           content: Text("Something went wrong. Please try again later."),
-          actions: <Widget>[
+          actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: Text("OK"),
             ),
           ],
@@ -97,6 +91,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text("Login"),
         centerTitle: true,
@@ -111,8 +106,10 @@ class _LoginState extends State<Login> {
         ),
       ),
       body: SafeArea(
-        child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 50),
               Icon(Icons.lock, size: 100),
@@ -135,8 +132,9 @@ class _LoginState extends State<Login> {
               ),
               const SizedBox(height: 25),
               MyButton(
-                onTap: loginDriver, // Trigger login function on tap
+                onTap: loginDriver,
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
