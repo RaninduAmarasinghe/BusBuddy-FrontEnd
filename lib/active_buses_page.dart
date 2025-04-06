@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:busbuddy_frontend/bus_map_page.dart'; // Update path as needed
 
 class ActiveBusesPage extends StatefulWidget {
   const ActiveBusesPage({super.key});
@@ -44,7 +45,16 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Active Buses")),
+      appBar: AppBar(
+        title: const Text("Active Buses"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: fetchActiveBuses,
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: fetchActiveBuses,
         child: activeBuses.isEmpty
@@ -58,7 +68,8 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                       : null;
 
                   return Card(
-                    margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: ListTile(
                       title: Text("Bus Number: ${bus['busNumber'] ?? 'N/A'}"),
                       subtitle: Column(
@@ -66,12 +77,36 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                         children: [
                           Text(
                               "Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
-                          Text("From ${route?['startPoint'] ?? '-'} "
-                              "to ${route?['endPoint'] ?? '-'}"),
+                          Text(
+                              "From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}"),
                         ],
                       ),
                       trailing: Text(bus['status'] ?? '',
-                          style: TextStyle(color: Colors.green)),
+                          style: const TextStyle(color: Colors.green)),
+                      onTap: () {
+                        final location = bus['location'];
+                        final busId = bus['busId'];
+                        if (location != null &&
+                            location['latitude'] != null &&
+                            location['longitude'] != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BusMapPage(
+                                latitude: location['latitude'],
+                                longitude: location['longitude'],
+                                // Optionally pass busId as a parameter to enable live refresh
+                              ),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text("No location available for this bus")),
+                          );
+                        }
+                      },
                     ),
                   );
                 },

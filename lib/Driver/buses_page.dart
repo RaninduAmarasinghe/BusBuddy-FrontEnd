@@ -18,7 +18,7 @@ class BusesPage extends StatefulWidget {
 }
 
 class _BusesPageState extends State<BusesPage> {
-  static const String baseUrl = 'http://192.168.8.102:8080'; // My ip
+  static const String baseUrl = 'http://192.168.8.102:8080';
   Map<String, dynamic>? busDetails;
   bool isRunning = false;
 
@@ -26,6 +26,7 @@ class _BusesPageState extends State<BusesPage> {
   LocationData? _currentLocation;
   bool _serviceEnabled = false;
   PermissionStatus _permissionGranted = PermissionStatus.denied;
+  bool _isLocationListening = false;
 
   @override
   void initState() {
@@ -33,12 +34,22 @@ class _BusesPageState extends State<BusesPage> {
     fetchBusDetails();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    // Don't disable location or stop trip here; driver must explicitly stop
+  }
+
   Future<void> fetchBusDetails() async {
     final url = Uri.parse('$baseUrl/bus/details/${widget.busId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
-        setState(() => busDetails = jsonDecode(response.body));
+        setState(() {
+          busDetails = jsonDecode(response.body);
+          isRunning = busDetails!["status"] == "Running";
+          if (isRunning) _startLocationUpdates();
+        });
       } else {
         setState(() => busDetails = {'error': 'Failed to load bus details'});
       }
@@ -47,7 +58,9 @@ class _BusesPageState extends State<BusesPage> {
     }
   }
 
-  Future<void> _checkLocationPermission() async {
+  Future<void> _startLocationUpdates() async {
+    if (_isLocationListening) return;
+
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
@@ -60,22 +73,42 @@ class _BusesPageState extends State<BusesPage> {
       if (_permissionGranted != PermissionStatus.granted) return;
     }
 
-    location.onLocationChanged.listen((LocationData currentLocation) {
-      setState(() => _currentLocation = currentLocation);
+    await location.enableBackgroundMode(enable: true);
+    location.changeSettings(interval: 5000, distanceFilter: 10);
+
+    location.onLocationChanged.listen((LocationData currentLocation) async {
+      if (!isRunning) return;
+      _currentLocation = currentLocation;
+
+      final url = Uri.parse('$baseUrl/bus/update-location/${widget.busId}');
+      try {
+        await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'latitude': currentLocation.latitude,
+            'longitude': currentLocation.longitude,
+          }),
+        );
+        print(
+            "Location sent: ${currentLocation.latitude}, ${currentLocation.longitude}");
+      } catch (e) {
+        print("Error sending location: $e");
+      }
     });
+
+    _isLocationListening = true;
   }
 
   Future<void> startTrip() async {
     final url = Uri.parse('$baseUrl/bus/startTrip/${widget.busId}');
-
     try {
       final response = await http.post(url);
       if (response.statusCode == 200) {
-        await _checkLocationPermission();
-        await location.enableBackgroundMode(enable: true);
         setState(() => isRunning = true);
+        await _startLocationUpdates();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Trip started')),
+          const SnackBar(content: Text('Trip started')),
         );
       } else {
         throw Exception("Failed to start trip");
@@ -87,14 +120,13 @@ class _BusesPageState extends State<BusesPage> {
 
   Future<void> stopTrip() async {
     final url = Uri.parse('$baseUrl/bus/stopTrip/${widget.busId}');
-
     try {
       final response = await http.post(url);
       if (response.statusCode == 200) {
-        await location.enableBackgroundMode(enable: false);
         setState(() => isRunning = false);
+        await location.enableBackgroundMode(enable: false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Trip stopped')),
+          const SnackBar(content: Text('Trip stopped')),
         );
       } else {
         throw Exception("Failed to stop trip");
