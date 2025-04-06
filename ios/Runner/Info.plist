@@ -2,12 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>io.flutter.embedded_views_preview</key>
-    <true/>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>This app requires access to the local network to connect to backend services and enable debugging tools.</string>
+
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_dartobservatory._tcp</string>
+    </array>
+
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>We use your location to track buses.</string>
-    <key>NSLocalNetworkUsageDescription</key>
-    <string>This application needs to access the local network to communicate with other devices.</string>
+
+    <key>io.flutter.embedded_views_preview</key>
+    <true/>
+
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'driver/bus_detail_page.dart'; // Import the missing BusDetailPage
+// Import the missing BusDetailPage
 
 class ActiveBusesPage extends StatefulWidget {
   const ActiveBusesPage({super.key});
@@ -64,15 +64,6 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                     subtitle: Text("Route: ${bus['routeName']}"),
                     trailing: Text(bus['status'],
                         style: TextStyle(color: Colors.green)),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BusDetailPage(
-                          bus: bus,
-                          onStatusChange: fetchActiveBuses,
-                        ),
-                      ),
-                    ),
                   );
                 },
               ),
