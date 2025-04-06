@@ -1,59 +1,42 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'bus_detail_page.dart'; // Import the new page
 
 class BusesPage extends StatefulWidget {
   final String companyId;
+  final String busId;
 
-  const BusesPage({super.key, required this.companyId});
+  const BusesPage({
+    super.key,
+    required this.companyId,
+    required this.busId,
+  });
 
   @override
-  State<BusesPage> createState() => _BusesPageState();
+  _BusesPageState createState() => _BusesPageState();
 }
 
 class _BusesPageState extends State<BusesPage> {
-  List<dynamic> buses = [];
-  bool isLoading = true;
-  bool hasError = false;
-  String errorMessage = '';
+  Map<String, dynamic>? busDetails;
 
   @override
   void initState() {
     super.initState();
-    fetchBuses();
+    fetchBusDetails();
   }
 
-  Future<void> fetchBuses() async {
-    setState(() {
-      isLoading = true;
-      hasError = false;
-      errorMessage = '';
-    });
+  Future<void> fetchBusDetails() async {
+    final url = Uri.parse('http://localhost:8080/bus/details/${widget.busId}');
 
     try {
-      final url =
-          Uri.parse('http://localhost:8080/bus/company/${widget.companyId}');
       final response = await http.get(url);
-
       if (response.statusCode == 200) {
-        setState(() {
-          buses = jsonDecode(response.body);
-          isLoading = false;
-        });
+        setState(() => busDetails = jsonDecode(response.body));
       } else {
-        setState(() {
-          hasError = true;
-          errorMessage = 'Failed to load buses (Error: ${response.statusCode})';
-          isLoading = false;
-        });
+        setState(() => busDetails = {'error': 'Failed to load bus details'});
       }
     } catch (e) {
-      setState(() {
-        hasError = true;
-        errorMessage = 'Error: $e';
-        isLoading = false;
-      });
+      setState(() => busDetails = {'error': 'Error: $e'});
     }
   }
 
@@ -61,68 +44,78 @@ class _BusesPageState extends State<BusesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Company Buses'),
+        title: const Text('Bus Details'),
         centerTitle: true,
+        backgroundColor: Colors.blueAccent,
       ),
-      body: RefreshIndicator(
-        onRefresh: fetchBuses,
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : hasError
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error, color: Colors.red, size: 50),
-                          const SizedBox(height: 10),
-                          Text(errorMessage, textAlign: TextAlign.center),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: fetchBuses,
-                            child: const Text("Retry"),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : buses.isEmpty
-                    ? const Center(
-                        child: Text("No buses available for this company."))
-                    : ListView.separated(
-                        itemCount: buses.length,
-                        separatorBuilder: (context, index) => const Divider(),
-                        itemBuilder: (context, index) {
-                          return Card(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            child: ListTile(
-                              leading: const Icon(Icons.directions_bus,
-                                  color: Colors.blue),
-                              title: Text(
-                                  "Bus Number: ${buses[index]['busNumber']}"),
-                              subtitle:
-                                  Text("Route: ${buses[index]['routeName']}"),
-                              trailing:
-                                  const Icon(Icons.arrow_forward_ios, size: 16),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => BusDetailPage(
-                                      bus: buses[index],
-                                      onStatusChange:
-                                          fetchBuses, // Pass function to refresh bus list
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (busDetails == null) return const Center(child: CircularProgressIndicator());
+    
+    if (busDetails!.containsKey('error')) {
+      return Center(child: Text(busDetails!['error'], 
+               style: const TextStyle(color: Colors.red, fontSize: 16)));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDetailRow('Bus ID', busDetails!['busId']),
+                    _buildDetailRow('Bus Number', busDetails!['busNumber']),
+                    _buildRouteDetails(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, dynamic value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Text('$label: ', 
+               style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value?.toString() ?? 'N/A'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRouteDetails() {
+    final routes = busDetails!['routes'] as List?;
+    if (routes == null || routes.isEmpty) {
+      return const Text('No route information available');
+    }
+
+    final route = routes.first;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDetailRow('Route Number', route['routeNumber']),
+        _buildDetailRow('Start Point', route['startPoint']),
+        _buildDetailRow('End Point', route['endPoint']),
+        _buildDetailRow('Departure Time', 
+            route['departureTimes']?.first?.toString()),
+        _buildDetailRow('Arrival Time', 
+            route['arrivalTimes']?.first?.toString()),
+      ],
     );
   }
 }

@@ -19,7 +19,8 @@ class _LoginState extends State<Login> {
 
   // Function to make POST request for driver login
   Future<void> loginDriver() async {
-    final url = Uri.parse('http://localhost:8080/driver/login'); // URL of your Spring Boot backend
+    final url = Uri.parse(
+        'http://localhost:8080/driver/login'); // URL of your Spring Boot backend
 
     final body = jsonEncode({
       'driverEmail': usernameController.text,
@@ -39,6 +40,7 @@ class _LoginState extends State<Login> {
         String companyId = data['companyId'];
         String companyName = data['companyName'];
         String driverName = data['driverName'];
+        String busId = data['busId']; // Changed from busNumber to busId
 
         // Navigate to HomePage with the extracted data
         Navigator.push(
@@ -48,6 +50,7 @@ class _LoginState extends State<Login> {
               companyId: companyId,
               companyName: companyName,
               driverName: driverName,
+              busId: busId, // Changed from busNumber to busId
             ),
           ),
         );

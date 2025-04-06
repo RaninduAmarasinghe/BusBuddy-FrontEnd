@@ -5,12 +5,14 @@ class HomePage extends StatefulWidget {
   final String companyId;
   final String companyName;
   final String driverName;
+  final String busId; // Changed from busNumber to busId
 
   const HomePage({
     super.key,
     required this.companyId,
     required this.companyName,
     required this.driverName,
+    required this.busId, // Changed from busNumber to busId
   });
 
   @override
@@ -95,12 +97,16 @@ class _HomePageState extends State<HomePage> {
                   _buildCardButton(
                     icon: Icons.directions_bus,
                     label: "Buses",
+                    // Inside the "Buses" button's onTap in home_page.dart
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              BusesPage(companyId: widget.companyId),
+                          builder: (context) => BusesPage(
+                            companyId: widget.companyId,
+                            busId: widget
+                                .busId, // Pass the actual busId from login
+                          ),
                         ),
                       );
                     },
