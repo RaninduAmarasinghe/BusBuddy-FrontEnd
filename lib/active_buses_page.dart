@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:busbuddy_frontend/bus_map_page.dart'; // Update path as needed
+import 'package:busbuddy_frontend/bus_map_page.dart'; // Update the path if needed
 
 class ActiveBusesPage extends StatefulWidget {
   const ActiveBusesPage({super.key});
@@ -20,13 +20,12 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
   }
 
   Future<void> fetchActiveBuses() async {
-    final url = Uri.parse('http://192.168.8.102:8080/bus/active');
+    final url = Uri.parse('http://192.168.8.101:8080/bus/active');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         setState(() {
-          activeBuses =
-              List<Map<String, dynamic>>.from(jsonDecode(response.body));
+          activeBuses = List<Map<String, dynamic>>.from(jsonDecode(response.body));
         });
       } else {
         setState(() => activeBuses = []);
@@ -66,26 +65,23 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                   final route = (bus['routes'] as List?)?.isNotEmpty == true
                       ? bus['routes'][0]
                       : null;
+                  final location = bus['location'];
+                  final busId = bus['busId'];
 
                   return Card(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: ListTile(
                       title: Text("Bus Number: ${bus['busNumber'] ?? 'N/A'}"),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                              "Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
-                          Text(
-                              "From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}"),
+                          Text("Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
+                          Text("From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}"),
                         ],
                       ),
                       trailing: Text(bus['status'] ?? '',
                           style: const TextStyle(color: Colors.green)),
                       onTap: () {
-                        final location = bus['location'];
-                        final busId = bus['busId'];
                         if (location != null &&
                             location['latitude'] != null &&
                             location['longitude'] != null) {
@@ -95,15 +91,15 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                               builder: (context) => BusMapPage(
                                 latitude: location['latitude'],
                                 longitude: location['longitude'],
-                                // Optionally pass busId as a parameter to enable live refresh
+                                busId: busId,
                               ),
                             ),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content:
-                                    Text("No location available for this bus")),
+                              content: Text("No location available for this bus"),
+                            ),
                           );
                         }
                       },

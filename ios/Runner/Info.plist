@@ -2,20 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSLocalNetworkUsageDescription</key>
-    <string>This app requires access to the local network to connect to backend services and enable debugging tools.</string>
-
-    <key>NSBonjourServices</key>
-    <array>
-        <string>_dartobservatory._tcp</string>
-    </array>
-
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>We use your location to track buses.</string>
-
-    <key>io.flutter.embedded_views_preview</key>
-    <true/>
-
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
@@ -55,6 +41,24 @@
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+
+    <!-- ✅ Required for Location Access -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We use your location to track buses.</string>
+
+    <!-- ✅ Required for Debugging & Local Network Access -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>This app requires access to the local network to connect to backend services and enable debugging tools.</string>
+
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_dartobservatory._tcp</string>
+    </array>
+
+    <!-- ✅ Flutter iOS View Support -->
+    <key>io.flutter.embedded_views_preview</key>
+    <true/>
+
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>

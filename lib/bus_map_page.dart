@@ -6,9 +6,14 @@ import 'dart:convert';
 class BusMapPage extends StatefulWidget {
   final double latitude;
   final double longitude;
+  final String busId; // <-- Add this!
 
-  const BusMapPage(
-      {super.key, required this.latitude, required this.longitude});
+  const BusMapPage({
+    super.key,
+    required this.latitude,
+    required this.longitude,
+    required this.busId,
+  });
 
   @override
   State<BusMapPage> createState() => _BusMapPageState();
@@ -17,7 +22,6 @@ class BusMapPage extends StatefulWidget {
 class _BusMapPageState extends State<BusMapPage> {
   late GoogleMapController _mapController;
   LatLng? _currentPosition;
-  late String busId; // You can pass this via constructor if needed
 
   @override
   void initState() {
@@ -25,9 +29,9 @@ class _BusMapPageState extends State<BusMapPage> {
     _currentPosition = LatLng(widget.latitude, widget.longitude);
   }
 
-  void _refreshLocation() async {
-    final url = Uri.parse(
-        "http://192.168.8.102:8080/bus/details/YOUR_BUS_ID"); // replace with actual
+  Future<void> _refreshLocation() async {
+    final url =
+        Uri.parse("http://192.168.8.101:8080/bus/details/${widget.busId}");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -43,9 +47,11 @@ class _BusMapPageState extends State<BusMapPage> {
                 .animateCamera(CameraUpdate.newLatLng(_currentPosition!));
           });
         }
+      } else {
+        print("Failed to fetch updated location.");
       }
     } catch (e) {
-      print("Failed to refresh location: $e");
+      print("Error refreshing location: $e");
     }
   }
 
@@ -53,16 +59,16 @@ class _BusMapPageState extends State<BusMapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Bus Location"),
+        title: const Text("Bus Location"),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _refreshLocation,
-          )
+          ),
         ],
       ),
       body: _currentPosition == null
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : GoogleMap(
               initialCameraPosition: CameraPosition(
                 target: _currentPosition!,
@@ -70,10 +76,10 @@ class _BusMapPageState extends State<BusMapPage> {
               ),
               markers: {
                 Marker(
-                  markerId: MarkerId("bus"),
+                  markerId: const MarkerId("bus"),
                   position: _currentPosition!,
-                  infoWindow: InfoWindow(title: "Bus"),
-                )
+                  infoWindow: const InfoWindow(title: "Bus"),
+                ),
               },
               onMapCreated: (controller) {
                 _mapController = controller;
