@@ -4,13 +4,16 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 
 late StompClient stompClient;
 
-void connectWebSocket({required Function(String) onLocationReceived}) {
+void connectWebSocket({
+  required String busId,
+  required Function(String data) onLocationReceived,
+}) {
   stompClient = StompClient(
     config: StompConfig.SockJS(
-      url: 'http://192.168.8.101:8080/ws-location', // 👈 Replace with your IP
+      url: 'http://192.168.8.101:8080/ws-location',
       onConnect: (StompFrame frame) {
         stompClient.subscribe(
-          destination: '/location/live',
+          destination: '/location/live/$busId',
           callback: (frame) {
             if (frame.body != null) {
               onLocationReceived(frame.body!);
@@ -18,8 +21,7 @@ void connectWebSocket({required Function(String) onLocationReceived}) {
           },
         );
       },
-      onWebSocketError: (dynamic error) => print("WebSocket Error: $error"),
-      onDisconnect: (_) => print("WebSocket Disconnected"),
+      onWebSocketError: (dynamic error) => print("WebSocket error: $error"),
     ),
   );
 

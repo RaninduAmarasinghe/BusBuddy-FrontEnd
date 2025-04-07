@@ -25,7 +25,8 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         setState(() {
-          activeBuses = List<Map<String, dynamic>>.from(jsonDecode(response.body));
+          activeBuses =
+              List<Map<String, dynamic>>.from(jsonDecode(response.body));
         });
       } else {
         setState(() => activeBuses = []);
@@ -69,14 +70,17 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                   final busId = bus['busId'];
 
                   return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: ListTile(
                       title: Text("Bus Number: ${bus['busNumber'] ?? 'N/A'}"),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
-                          Text("From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}"),
+                          Text(
+                              "Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
+                          Text(
+                              "From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}"),
                         ],
                       ),
                       trailing: Text(bus['status'] ?? '',
@@ -98,7 +102,8 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("No location available for this bus"),
+                              content:
+                                  Text("No location available for this bus"),
                             ),
                           );
                         }

@@ -107,6 +107,8 @@ class _BusesPageState extends State<BusesPage> {
       if (response.statusCode == 200) {
         setState(() => isRunning = true);
         await _startLocationUpdates();
+        // Push the bus to the Active Buses page
+        Navigator.pushReplacementNamed(context, '/activeBuses');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Trip started')),
         );
