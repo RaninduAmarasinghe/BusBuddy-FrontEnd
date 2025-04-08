@@ -82,7 +82,10 @@ class _BusesPageState extends State<BusesPage> {
 
       final url = Uri.parse('$baseUrl/bus/update-location/${widget.busId}');
       try {
-        await http.post(
+        // Debugging: log location data
+        print("Sending location update: Latitude: ${currentLocation.latitude}, Longitude: ${currentLocation.longitude}");
+
+        final response = await http.post(
           url,
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
@@ -90,8 +93,12 @@ class _BusesPageState extends State<BusesPage> {
             'longitude': currentLocation.longitude,
           }),
         );
-        print(
-            "Location sent: ${currentLocation.latitude}, ${currentLocation.longitude}");
+
+        if (response.statusCode == 200) {
+          print("Location sent successfully");
+        } else {
+          print("Failed to send location: ${response.statusCode}");
+        }
       } catch (e) {
         print("Error sending location: $e");
       }
@@ -107,8 +114,6 @@ class _BusesPageState extends State<BusesPage> {
       if (response.statusCode == 200) {
         setState(() => isRunning = true);
         await _startLocationUpdates();
-        // Push the bus to the Active Buses page
-        Navigator.pushReplacementNamed(context, '/activeBuses');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Trip started')),
         );
