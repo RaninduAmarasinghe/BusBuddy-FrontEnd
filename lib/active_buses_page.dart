@@ -73,42 +73,43 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                     margin:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: ListTile(
-                      title: Text("Bus Number: ${bus['busNumber'] ?? 'N/A'}"),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                              "Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
-                          Text(
-                              "From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}"),
-                        ],
-                      ),
-                      trailing: Text(bus['status'] ?? '',
-                          style: const TextStyle(color: Colors.green)),
-                      onTap: () {
-                        if (location != null &&
-                            location['latitude'] != null &&
-                            location['longitude'] != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BusMapPage(
-                                latitude: location['latitude'],
-                                longitude: location['longitude'],
-                                busId: busId,
+                        title: Text("Bus Number: ${bus['busNumber'] ?? 'N/A'}"),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                                "Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
+                            Text(
+                                "From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}"),
+                          ],
+                        ),
+                        trailing: Text(bus['status'] ?? '',
+                            style: const TextStyle(color: Colors.green)),
+                        onTap: () {
+                          if (location != null &&
+                              location['latitude'] != null &&
+                              location['longitude'] != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BusMapPage(
+                                  latitude: location['latitude'],
+                                  longitude: location['longitude'],
+                                  busId: busId,
+                                  companyId:
+                                      bus['companyId'], // ✅ Fix: pass companyId
+                                ),
                               ),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text("No location available for this bus"),
-                            ),
-                          );
-                        }
-                      },
-                    ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text("No location available for this bus"),
+                              ),
+                            );
+                          }
+                        }),
                   );
                 },
               ),
