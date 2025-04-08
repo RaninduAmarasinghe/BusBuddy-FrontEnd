@@ -83,7 +83,8 @@ class _BusesPageState extends State<BusesPage> {
       final url = Uri.parse('$baseUrl/bus/update-location/${widget.busId}');
       try {
         // Debugging: log location data
-        print("Sending location update: Latitude: ${currentLocation.latitude}, Longitude: ${currentLocation.longitude}");
+        print(
+            "Sending location update: Latitude: ${currentLocation.latitude}, Longitude: ${currentLocation.longitude}");
 
         final response = await http.post(
           url,

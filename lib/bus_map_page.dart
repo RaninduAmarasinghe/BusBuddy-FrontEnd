@@ -87,6 +87,12 @@ class _BusMapPageState extends State<BusMapPage> {
     final messageController = TextEditingController();
 
     bool isSubmitting = false;
+    String? nameError;
+    String? contactError;
+
+    String labelText = type == "MissingItem"
+        ? "What is your missing item?"
+        : "What is your complaint?";
 
     showDialog(
       context: context,
@@ -94,26 +100,36 @@ class _BusMapPageState extends State<BusMapPage> {
         builder: (context, setState) {
           return AlertDialog(
             title: Text(
-                type == "MissingItem" ? "Missing Item Alert" : "Complaint"),
+              type == "MissingItem" ? "Missing Item Alert" : "Complaint",
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: nameController,
-                    decoration: InputDecoration(labelText: 'Your Name'),
+                    decoration: InputDecoration(
+                      labelText: 'Your Name *',
+                      errorText: nameError,
+                    ),
                   ),
                   TextField(
                     controller: contactController,
-                    decoration: InputDecoration(labelText: 'Contact Number'),
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: 'Contact Number *',
+                      errorText: contactError,
+                    ),
                   ),
                   TextField(
                     controller: messageController,
-                    decoration: InputDecoration(labelText: 'Details'),
+                    decoration: InputDecoration(
+                      labelText: labelText,
+                    ),
                   ),
                   if (isSubmitting)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 16.0),
                       child: CircularProgressIndicator(),
                     ),
                 ],
@@ -124,34 +140,55 @@ class _BusMapPageState extends State<BusMapPage> {
                 onPressed: isSubmitting
                     ? null
                     : () async {
+                        final name = nameController.text.trim();
+                        final contact = contactController.text.trim();
+
+                        // Validation
+                        setState(() {
+                          nameError = name.isEmpty ? "Name is required" : null;
+                          contactError = contact.isEmpty
+                              ? "Contact number is required"
+                              : (RegExp(r'^\d{10}$').hasMatch(contact)
+                                  ? null
+                                  : "Must be exactly 10 digits");
+                        });
+
+                        if (nameError != null || contactError != null) return;
+
                         setState(() => isSubmitting = true);
+
                         try {
                           stompClient.send(
                             destination: '/app/alert',
                             body: jsonEncode({
                               "busId": widget.busId,
                               "companyId": widget.companyId,
-                              "senderName": nameController.text,
-                              "contactNumber": contactController.text,
-                              "message": messageController.text,
+                              "senderName": name,
+                              "contactNumber": contact,
+                              "message": messageController.text.trim(),
                               "type": type,
                             }),
                           );
-                          await Future.delayed(Duration(milliseconds: 500));
+
+                          await Future.delayed(
+                              const Duration(milliseconds: 500));
                           Navigator.pop(context);
+
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Alert sent successfully')),
+                            const SnackBar(
+                                content: Text('Alert sent successfully')),
                           );
                         } catch (e) {
                           print("WebSocket send error: $e");
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to send alert')),
+                            const SnackBar(
+                                content: Text('Failed to send alert')),
                           );
                         } finally {
                           setState(() => isSubmitting = false);
                         }
                       },
-                child: Text("Submit"),
+                child: const Text("Submit"),
               ),
             ],
           );
@@ -163,7 +200,7 @@ class _BusMapPageState extends State<BusMapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false, // ✅ Prevent layout jump on keyboard open
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Bus Location"),
         actions: [
@@ -203,13 +240,13 @@ class _BusMapPageState extends State<BusMapPage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _showAlertForm(type: "MissingItem"),
-                    icon:
-                        Icon(Icons.warning_amber_rounded, color: Colors.white),
-                    label: Text("Missing Item"),
+                    icon: const Icon(Icons.warning_amber_rounded,
+                        color: Colors.white),
+                    label: const Text("Missing Item"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orangeAccent,
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -220,12 +257,12 @@ class _BusMapPageState extends State<BusMapPage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _showAlertForm(type: "Complaint"),
-                    icon: Icon(Icons.report_problem, color: Colors.white),
-                    label: Text("Complaint"),
+                    icon: const Icon(Icons.report_problem, color: Colors.white),
+                    label: const Text("Complaint"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
