@@ -90,83 +90,87 @@ class _BusMapPageState extends State<BusMapPage> {
 
     showDialog(
       context: context,
-      builder: (_) => StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title:
-              Text(type == "MissingItem" ? "Missing Item Alert" : "Complaint"),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
+      builder: (_) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text(
+                type == "MissingItem" ? "Missing Item Alert" : "Complaint"),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
                     controller: nameController,
-                    decoration: InputDecoration(labelText: 'Your Name')),
-                TextField(
-                    controller: contactController,
-                    decoration: InputDecoration(labelText: 'Contact Number')),
-                TextField(
-                    controller: messageController,
-                    decoration: InputDecoration(labelText: 'Details')),
-                if (isSubmitting)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: CircularProgressIndicator(),
+                    decoration: InputDecoration(labelText: 'Your Name'),
                   ),
-              ],
+                  TextField(
+                    controller: contactController,
+                    decoration: InputDecoration(labelText: 'Contact Number'),
+                  ),
+                  TextField(
+                    controller: messageController,
+                    decoration: InputDecoration(labelText: 'Details'),
+                  ),
+                  if (isSubmitting)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                ],
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: isSubmitting
-                  ? null
-                  : () async {
-                      setState(() => isSubmitting = true);
-
-                      try {
-                        stompClient.send(
-                          destination: '/app/alert',
-                          body: jsonEncode({
-                            "busId": widget.busId,
-                            "companyId": widget.companyId,
-                            "senderName": nameController.text,
-                            "contactNumber": contactController.text,
-                            "message": messageController.text,
-                            "type": type,
-                          }),
-                        );
-
-                        await Future.delayed(
-                            Duration(milliseconds: 500)); // smooth out
-                        Navigator.pop(context);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Alert sent successfully')),
-                        );
-                      } catch (e) {
-                        print("WebSocket send error: $e");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to send alert')),
-                        );
-                      } finally {
-                        setState(() => isSubmitting = false);
-                      }
-                    },
-              child: Text("Submit"),
-            ),
-          ],
-        );
-      }),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        setState(() => isSubmitting = true);
+                        try {
+                          stompClient.send(
+                            destination: '/app/alert',
+                            body: jsonEncode({
+                              "busId": widget.busId,
+                              "companyId": widget.companyId,
+                              "senderName": nameController.text,
+                              "contactNumber": contactController.text,
+                              "message": messageController.text,
+                              "type": type,
+                            }),
+                          );
+                          await Future.delayed(Duration(milliseconds: 500));
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Alert sent successfully')),
+                          );
+                        } catch (e) {
+                          print("WebSocket send error: $e");
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to send alert')),
+                          );
+                        } finally {
+                          setState(() => isSubmitting = false);
+                        }
+                      },
+                child: Text("Submit"),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false, // ✅ Prevent layout jump on keyboard open
       appBar: AppBar(
         title: const Text("Bus Location"),
         actions: [
           IconButton(
-              icon: const Icon(Icons.refresh), onPressed: _refreshLocation),
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshLocation,
+          ),
         ],
       ),
       body: Column(
