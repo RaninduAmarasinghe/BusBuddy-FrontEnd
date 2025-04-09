@@ -42,20 +42,27 @@
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
 
-    <!-- ✅ Required for Location Access -->
+    <!-- ✅ Location Permissions -->
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>We use your location to track buses.</string>
+    <string>This app uses your location to track the bus route.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs background location access for bus tracking.</string>
 
-    <!-- ✅ Required for Debugging & Local Network Access -->
+    <!-- ✅ Enable background location mode -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>location</string>
+    </array>
+
+    <!-- ✅ Debugging and Flutter tools -->
     <key>NSLocalNetworkUsageDescription</key>
     <string>This app requires access to the local network to connect to backend services and enable debugging tools.</string>
-
     <key>NSBonjourServices</key>
     <array>
         <string>_dartobservatory._tcp</string>
     </array>
 
-    <!-- ✅ Flutter iOS View Support -->
+    <!-- ✅ Flutter Platform Views -->
     <key>io.flutter.embedded_views_preview</key>
     <true/>
 

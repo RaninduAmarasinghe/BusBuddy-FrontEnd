@@ -74,7 +74,13 @@ class _BusesPageState extends State<BusesPage> {
     }
 
     await location.enableBackgroundMode(enable: true);
-    location.changeSettings(interval: 5000, distanceFilter: 10);
+
+    // ⚙️ Updated settings: 5 seconds interval, no distance filter
+    location.changeSettings(
+      interval: 5000, // 5000 milliseconds = 5 seconds
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 0, // Ensure updates even without movement
+    );
 
     location.onLocationChanged.listen((LocationData currentLocation) async {
       if (!isRunning) return;
@@ -82,9 +88,8 @@ class _BusesPageState extends State<BusesPage> {
 
       final url = Uri.parse('$baseUrl/bus/update-location/${widget.busId}');
       try {
-        // Debugging: log location data
         print(
-            "Sending location update: Latitude: ${currentLocation.latitude}, Longitude: ${currentLocation.longitude}");
+            "📍 Sending location: ${currentLocation.latitude}, ${currentLocation.longitude}");
 
         final response = await http.post(
           url,
@@ -96,12 +101,12 @@ class _BusesPageState extends State<BusesPage> {
         );
 
         if (response.statusCode == 200) {
-          print("Location sent successfully");
+          print("✅ Location sent successfully");
         } else {
-          print("Failed to send location: ${response.statusCode}");
+          print("❌ Failed to send location: ${response.statusCode}");
         }
       } catch (e) {
-        print("Error sending location: $e");
+        print("❌ Error sending location: $e");
       }
     });
 

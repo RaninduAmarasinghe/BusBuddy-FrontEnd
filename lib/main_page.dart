@@ -1,9 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:busbuddy_frontend/Driver/login.dart';
-import 'active_buses_page.dart'; // Import Active Buses Page
+import 'active_buses_page.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  final Location location = Location();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndRequestPermission();
+  }
+
+  Future<void> _checkAndRequestPermission() async {
+    bool serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) return;
+    }
+
+    PermissionStatus permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        _showPermissionDeniedDialog();
+      }
+    }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Permission Required"),
+        content: const Text(
+          "Location permission is required to track buses in real time. Please enable it in your device settings.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +77,8 @@ class MainPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.person, color: Colors.black87, size: 28),
             onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => Login()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Login()));
             },
           ),
         ],
@@ -56,8 +104,7 @@ class MainPage extends StatelessWidget {
                 crossAxisCount: 2,
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
-                childAspectRatio:
-                    1.0, // Ensures the tiles have equal height and width
+                childAspectRatio: 1.0,
               ),
               itemBuilder: (context, index) {
                 switch (index) {
