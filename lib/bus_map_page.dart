@@ -58,7 +58,7 @@ class _BusMapPageState extends State<BusMapPage> {
 
   Future<void> _refreshLocation() async {
     final url =
-        Uri.parse("http://192.168.8.101:8080/bus/details/${widget.busId}");
+        Uri.parse("http://192.168.8.100:8080/bus/details/${widget.busId}");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {

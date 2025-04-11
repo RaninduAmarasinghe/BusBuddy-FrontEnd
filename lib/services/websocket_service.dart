@@ -12,7 +12,7 @@ void connectWebSocket({
 }) {
   stompClient = StompClient(
     config: StompConfig.SockJS(
-      url: 'http://192.168.8.101:8080/ws-location',
+      url: 'http://192.168.8.100:8080/ws-location',
       onConnect: (StompFrame frame) {
         print("WebSocket connected");
 

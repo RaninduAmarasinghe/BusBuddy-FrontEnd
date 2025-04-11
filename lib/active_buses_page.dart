@@ -20,7 +20,7 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
   }
 
   Future<void> fetchActiveBuses() async {
-    final url = Uri.parse('http://192.168.8.101:8080/bus/active');
+    final url = Uri.parse('http://192.168.8.100:8080/bus/active');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {

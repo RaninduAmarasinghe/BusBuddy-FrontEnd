@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:busbuddy_frontend/Driver/login.dart';
 import 'active_buses_page.dart';
+import 'schedule_page.dart'; // Import the SchedulePage
+import 'about_us_page.dart'; // Import the AboutUsPage
+import 'help_support_page.dart'; // Import the HelpSupportPage
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -110,7 +113,12 @@ class _MainPageState extends State<MainPage> {
                 switch (index) {
                   case 0:
                     return _buildMenuItem("assets/shedule.png", "Schedule", () {
-                      print("Schedule clicked");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SchedulePage(),
+                        ),
+                      );
                     });
                   case 1:
                     return _buildMenuItem(
@@ -125,12 +133,22 @@ class _MainPageState extends State<MainPage> {
                   case 2:
                     return _buildMenuItem(
                         "assets/help-desk.png", "Help & Support", () {
-                      print("Help & Support clicked");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HelpSupportPage(),
+                        ),
+                      );
                     });
                   case 3:
                     return _buildMenuItem("assets/information.png", "About Us",
                         () {
-                      print("About Us clicked");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AboutUsPage(),
+                        ),
+                      );
                     });
                   default:
                     return Container();
