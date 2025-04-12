@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
+  final String driverId;
   final String driverName;
+  final String driverEmail;
   final String companyName;
+  final String busId;
 
   const ProfilePage({
     super.key,
+    required this.driverId,
     required this.driverName,
+    required this.driverEmail,
     required this.companyName,
+    required this.busId,
   });
 
   @override
@@ -24,8 +30,7 @@ class ProfilePage extends StatelessWidget {
           children: [
             const CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage(
-                  'assets/profile.png'), // You can update this to a network image if needed
+              backgroundImage: AssetImage('assets/profile.png'),
             ),
             const SizedBox(height: 20),
             Text(
@@ -40,22 +45,20 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 20),
             const Divider(thickness: 1),
             const SizedBox(height: 20),
-
-            // Example Profile Info
             ListTile(
-              leading: const Icon(Icons.phone_android),
-              title: const Text("Mobile Number"),
-              subtitle: const Text("+94 712345678"), // Replace if needed
+              leading: const Icon(Icons.badge),
+              title: const Text("Driver ID"),
+              subtitle: Text(driverId),
             ),
             ListTile(
-              leading: const Icon(Icons.email),
+              leading: const Icon(Icons.phone_android),
               title: const Text("Email"),
-              subtitle: const Text("driver@example.com"), // Replace if needed
+              subtitle: Text(driverEmail),
             ),
             ListTile(
               leading: const Icon(Icons.directions_bus),
-              title: const Text("Assigned Bus"),
-              subtitle: const Text("B2290"), // Replace dynamically if available
+              title: const Text("Assigned Bus ID"),
+              subtitle: Text(busId),
             ),
           ],
         ),

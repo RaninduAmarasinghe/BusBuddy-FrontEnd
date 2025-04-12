@@ -17,87 +17,90 @@ class _LoginState extends State<Login> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // Function to make POST request for driver login
   Future<void> loginDriver() async {
     final url = Uri.parse('http://192.168.8.100:8080/driver/login');
-
-    final body = jsonEncode({
-      'driverEmail': usernameController.text,
-      'driverPassword': passwordController.text,
-    });
-
     final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({
+      'driverEmail': usernameController.text.trim(),
+      'driverPassword': passwordController.text.trim(),
+    });
 
     try {
       final response = await http.post(url, body: body, headers: headers);
 
       if (response.statusCode == 200) {
-        print('Login successful');
+        print('✅ Login successful');
 
-        var data = jsonDecode(response.body);
-        String companyId = data['companyId'];
-        String companyName = data['companyName'];
-        String driverName = data['driverName'];
-        String busId = data['busId'];
+        final data = jsonDecode(response.body);
 
-        Navigator.push(
+        // Fallbacks in case fields are missing
+        final driverId = data['driverId']?.toString() ?? '';
+        final driverName = data['driverName'] ?? '';
+        final driverEmail = data['driverEmail'] ?? '';
+        final companyId = data['companyId'] ?? '';
+        final companyName = data['companyName'] ?? '';
+        final busId = data['busId'] ?? '';
+
+        print("📦 Decoded login data:");
+        print("driverId: $driverId");
+        print("driverName: $driverName");
+        print("driverEmail: $driverEmail");
+        print("companyId: $companyId");
+        print("companyName: $companyName");
+        print("busId: $busId");
+
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => HomePage(
+              driverId: driverId,
+              driverName: driverName,
+              driverEmail: driverEmail,
               companyId: companyId,
               companyName: companyName,
-              driverName: driverName,
               busId: busId,
             ),
           ),
         );
       } else {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text("Login Failed"),
-            content: Text("Invalid email or password"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text("OK"),
-              ),
-            ],
-          ),
-        );
-        print('Invalid email or password');
+        _showErrorDialog("Login Failed", "Invalid email or password.");
       }
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Error"),
-          content: Text("Something went wrong. Please try again later."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text("OK"),
-            ),
-          ],
-        ),
-      );
-      print('Error: $e');
+      print('❌ Error during login: $e');
+      _showErrorDialog(
+          "Error", "Something went wrong. Please try again later.");
     }
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: const Text("OK"),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false, // ✅ Prevent layout jump
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("Login"),
+        title: const Text("Login"),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => MainPage()),
+              MaterialPageRoute(builder: (context) => const MainPage()),
             );
           },
         ),
@@ -115,11 +118,11 @@ class _LoginState extends State<Login> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 50),
-                      Icon(Icons.lock, size: 100),
-                      const SizedBox(height: 50),
+                      const Icon(Icons.lock, size: 100),
+                      const SizedBox(height: 40),
                       Text(
                         "Welcome Back",
-                        style: TextStyle(color: Colors.grey[700], fontSize: 16),
+                        style: TextStyle(color: Colors.grey[700], fontSize: 18),
                       ),
                       const SizedBox(height: 25),
                       MyTextField(
@@ -137,8 +140,8 @@ class _LoginState extends State<Login> {
                       MyButton(
                         onTap: loginDriver,
                       ),
-                      const SizedBox(height: 20),
-                      Spacer(),
+                      const SizedBox(height: 30),
+                      const Spacer(),
                     ],
                   ),
                 ),
