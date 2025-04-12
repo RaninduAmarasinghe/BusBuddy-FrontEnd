@@ -74,6 +74,7 @@ flutter:
     - assets/activebus.png
     - assets/help-desk.png
     - assets/information.png
+    - assets/profile.png
   #
 
   # An image asset can refer to one or more resolution-specific "variants", see
