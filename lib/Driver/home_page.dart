@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:busbuddy_frontend/Driver/buses_page.dart';
+import 'package:busbuddy_frontend/Driver/notifications_page.dart';
+import 'package:busbuddy_frontend/Driver/messages_page.dart';
+import 'package:busbuddy_frontend/Driver/profile_page.dart';
 
 class HomePage extends StatefulWidget {
   final String companyId;
@@ -90,8 +93,12 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.account_circle,
                     label: "Profile",
                     onTap: () {
-                      // Navigate to Profile Page (Add Profile page later)
-                      print("Profile button clicked");
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ProfilePage(
+                                  driverName: widget.driverName,
+                                  companyName: widget.companyName)));
                     },
                   ),
                   _buildCardButton(
@@ -115,16 +122,20 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.notifications,
                     label: "Notifications",
                     onTap: () {
-                      print("Notifications button clicked");
-                      // Navigate to Notifications page
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const NotificationsPage()));
                     },
                   ),
                   _buildCardButton(
                     icon: Icons.message,
                     label: "Messages",
                     onTap: () {
-                      print("Messages button clicked");
-                      // Navigate to Messages page
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const MessagesPage()));
                     },
                   ),
                 ],
