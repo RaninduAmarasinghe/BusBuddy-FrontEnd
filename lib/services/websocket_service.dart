@@ -32,7 +32,8 @@ void connectWebSocket({
         // 🔔 Subscribe to alert messages for this bus
         if (onAlertReceived != null) {
           stompClient.subscribe(
-            destination: '/topic/alerts/$busId', // listens to alerts for this bus only
+            destination:
+                '/topic/alerts/$busId', // listens to alerts for this bus only
             callback: (frame) {
               if (frame.body != null) {
                 onAlertReceived(frame.body!);

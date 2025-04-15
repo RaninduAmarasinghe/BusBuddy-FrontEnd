@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
         print("📥 Received alert on HomePage: $data");
         final alert = jsonDecode(data);
         final type = (alert['type']?.toLowerCase().replaceAll(' ', '') ?? '');
-        if (type == 'missingitem') {
+        if (type == 'missingitem' || type == 'complaint') {
           setState(() {
             hasNewAlert = true;
             print("🔴 Red dot activated");
@@ -177,7 +177,11 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const MessagesPage(),
+                  builder: (context) => MessagesPage(
+                    driverId: widget.driverId,
+                    companyId: widget.companyId,
+                    driverName: widget.driverName,
+                  ),
                 ),
               );
             },
