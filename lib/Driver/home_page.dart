@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:busbuddy_frontend/Driver/buses_page.dart';
 import 'package:busbuddy_frontend/Driver/notifications_page.dart';
 import 'package:busbuddy_frontend/Driver/messages_page.dart';
 import 'package:busbuddy_frontend/Driver/profile_page.dart';
+import 'package:busbuddy_frontend/services/websocket_service.dart';
 
 class HomePage extends StatefulWidget {
   final String driverId;
@@ -27,6 +29,28 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool hasNewAlert = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print('🚀 HomePage init - connecting WebSocket...');
+    connectWebSocket(
+      busId: widget.busId,
+      onAlertReceived: (data) {
+        print("📥 Received alert on HomePage: $data");
+        final alert = jsonDecode(data);
+        final type = (alert['type']?.toLowerCase().replaceAll(' ', '') ?? '');
+        if (type == 'missingitem') {
+          setState(() {
+            hasNewAlert = true;
+            print("🔴 Red dot activated");
+          });
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,13 +157,18 @@ class _HomePageState extends State<HomePage> {
             icon: Icons.notifications,
             label: "Notifications",
             onTap: () {
+              setState(() => hasNewAlert = false);
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const NotificationsPage(),
+                  builder: (context) => NotificationsPage(
+                    companyId: widget.companyId,
+                    busId: widget.busId,
+                  ),
                 ),
               );
             },
+            showDot: hasNewAlert,
           ),
           _buildCardButton(
             icon: Icons.message,
@@ -162,6 +191,7 @@ class _HomePageState extends State<HomePage> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool showDot = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -180,7 +210,25 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 50, color: Colors.blueAccent),
+              Stack(
+                children: [
+                  Icon(icon, size: 50, color: Colors.blueAccent),
+                  if (showDot)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(height: 10),
               Text(
                 label,

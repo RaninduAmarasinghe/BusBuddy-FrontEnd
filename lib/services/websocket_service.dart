@@ -9,14 +9,15 @@ late StompClient stompClient;
 void connectWebSocket({
   required String busId,
   Function(String data)? onLocationReceived,
+  Function(String data)? onAlertReceived, // NEW: alert callback
 }) {
   stompClient = StompClient(
     config: StompConfig.SockJS(
       url: 'http://192.168.8.100:8080/ws-location',
       onConnect: (StompFrame frame) {
-        print("WebSocket connected");
+        print("✅ WebSocket connected");
 
-        // Location updates subscription
+        // 🔁 Subscribe to bus location updates
         if (onLocationReceived != null) {
           stompClient.subscribe(
             destination: '/location/live/$busId',
@@ -28,7 +29,17 @@ void connectWebSocket({
           );
         }
 
-        // You can add more subscriptions here if needed (e.g., admin panel receiving alerts)
+        // 🔔 Subscribe to alert messages for this bus
+        if (onAlertReceived != null) {
+          stompClient.subscribe(
+            destination: '/topic/alerts/$busId', // listens to alerts for this bus only
+            callback: (frame) {
+              if (frame.body != null) {
+                onAlertReceived(frame.body!);
+              }
+            },
+          );
+        }
       },
       onWebSocketError: (dynamic error) => print("WebSocket error: $error"),
       onDisconnect: (frame) => print("WebSocket disconnected"),
@@ -39,13 +50,5 @@ void connectWebSocket({
 
   if (!stompClient.connected) {
     stompClient.activate();
-  }
-}
-
-/// Call this to manually disconnect the WebSocket
-void disconnectWebSocket() {
-  if (stompClient.connected) {
-    stompClient.deactivate();
-    print("WebSocket disconnected");
   }
 }
