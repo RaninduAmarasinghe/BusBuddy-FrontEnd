@@ -61,40 +61,46 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.black.withOpacity(0.5),
+        elevation: 0,
+        centerTitle: true,
         title: const Text(
           "Bus Buddy",
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.white.withOpacity(0.8),
-        elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 15),
-          child: Image.asset("assets/bus.png"),
+          child: Image.asset(
+            "assets/bus.png",
+            color: Colors.white, // Tint the image for a futuristic look
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person, color: Colors.black87, size: 28),
+            icon: const Icon(Icons.person, color: Colors.white, size: 28),
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const Login()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Login()),
+              );
             },
           ),
         ],
       ),
       body: Stack(
         children: [
+          // Dark gradient background for a futuristic look
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.blue.shade50, Colors.white],
+                  colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
                 ),
               ),
             ),
@@ -166,20 +172,14 @@ class _MainPageState extends State<MainPage> {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
+              color: Colors.black.withOpacity(0.3),
               blurRadius: 10,
-              spreadRadius: 2,
               offset: const Offset(4, 4),
-            ),
-            BoxShadow(
-              color: Colors.white,
-              blurRadius: 5,
-              spreadRadius: -5,
-              offset: const Offset(-4, -4),
             ),
           ],
         ),
@@ -197,7 +197,7 @@ class _MainPageState extends State<MainPage> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: Colors.white,
               ),
             ),
           ],

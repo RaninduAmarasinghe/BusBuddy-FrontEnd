@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 Future<List<Map<String, dynamic>>> fetchOldAlerts(String companyId) async {
   final response = await http.get(
     Uri.parse(
-        'http://192.168.8.100:8080/company/$companyId'), // update if needed
+        'http://192.168.8.101:8080/company/$companyId'), // update if needed
   );
 
   if (response.statusCode == 200) {

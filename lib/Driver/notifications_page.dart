@@ -34,7 +34,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void _connectWebSocket() {
     _stompClient = StompClient(
       config: StompConfig.SockJS(
-        url: 'http://192.168.8.100:8080/ws-location',
+        url: 'http://192.168.8.101:8080/ws-location',
         onConnect: (StompFrame frame) {
           final topic = '/topic/alerts/${widget.busId}';
           print("📡 Subscribing to $topic");
@@ -69,7 +69,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Future<void> _fetchOldAlerts() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.8.100:8080/company/${widget.companyId}'),
+        Uri.parse('http://192.168.8.101:8080/company/${widget.companyId}'),
       );
 
       if (response.statusCode == 200) {

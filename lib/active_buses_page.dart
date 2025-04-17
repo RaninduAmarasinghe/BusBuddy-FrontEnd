@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -12,15 +13,25 @@ class ActiveBusesPage extends StatefulWidget {
 
 class _ActiveBusesPageState extends State<ActiveBusesPage> {
   List<Map<String, dynamic>> activeBuses = [];
+  Timer? _timer; // Timer for auto-refresh
 
   @override
   void initState() {
     super.initState();
     fetchActiveBuses();
+    // Auto-refresh every 30 seconds (adjust as needed)
+    _timer = Timer.periodic(
+        const Duration(seconds: 30), (Timer t) => fetchActiveBuses());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel timer to avoid memory leaks
+    super.dispose();
   }
 
   Future<void> fetchActiveBuses() async {
-    final url = Uri.parse('http://192.168.8.100:8080/bus/active');
+    final url = Uri.parse('http://192.168.8.101:8080/bus/active');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -45,46 +56,66 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      // Transparent AppBar with white icon theme (affecting the back button)
       appBar: AppBar(
-        title: const Text("Active Buses"),
+        backgroundColor: Colors.black.withOpacity(0.5),
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "Active Buses",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: fetchActiveBuses,
             tooltip: 'Refresh',
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: fetchActiveBuses,
-        child: activeBuses.isEmpty
-            ? const Center(child: Text("No active buses available"))
-            : ListView.builder(
-                itemCount: activeBuses.length,
-                itemBuilder: (context, index) {
-                  final bus = activeBuses[index];
-                  final route = (bus['routes'] as List?)?.isNotEmpty == true
-                      ? bus['routes'][0]
-                      : null;
-                  final location = bus['location'];
-                  final busId = bus['busId'];
+      body: Container(
+        // Dark gradient background for a futuristic vibe
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: RefreshIndicator(
+          onRefresh: fetchActiveBuses,
+          color: Colors.white,
+          child: activeBuses.isEmpty
+              ? const Center(
+                  child: Text(
+                    "No active buses available",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.only(
+                    top: kToolbarHeight + 60,
+                    bottom: 20,
+                  ),
+                  itemCount: activeBuses.length,
+                  itemBuilder: (context, index) {
+                    final bus = activeBuses[index];
+                    // Get the first route if available
+                    final route = (bus['routes'] as List?)?.isNotEmpty == true
+                        ? bus['routes'][0]
+                        : null;
+                    final location = bus['location'];
+                    final busId = bus['busId'];
 
-                  return Card(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    child: ListTile(
-                        title: Text("Bus Number: ${bus['busNumber'] ?? 'N/A'}"),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                                "Route Number: ${route?['routeNumber'] ?? 'N/A'}"),
-                            Text(
-                                "From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}"),
-                          ],
-                        ),
-                        trailing: Text(bus['status'] ?? '',
-                            style: const TextStyle(color: Colors.green)),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: GestureDetector(
                         onTap: () {
                           if (location != null &&
                               location['latitude'] != null &&
@@ -96,8 +127,7 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                                   latitude: location['latitude'],
                                   longitude: location['longitude'],
                                   busId: busId,
-                                  companyId:
-                                      bus['companyId'], // ✅ Fix: pass companyId
+                                  companyId: bus['companyId'], // pass companyId
                                 ),
                               ),
                             );
@@ -109,10 +139,56 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                               ),
                             );
                           }
-                        }),
-                  );
-                },
-              ),
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(4, 4),
+                              ),
+                            ],
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
+                            title: Text(
+                              "Bus Number: ${bus['busNumber'] ?? 'N/A'}",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Route Number: ${route?['routeNumber'] ?? 'N/A'}",
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                                Text(
+                                  "From ${route?['startPoint'] ?? '-'} to ${route?['endPoint'] ?? '-'}",
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ],
+                            ),
+                            trailing: Text(
+                              bus['status'] ?? '',
+                              style: const TextStyle(color: Colors.greenAccent),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
       ),
     );
   }
