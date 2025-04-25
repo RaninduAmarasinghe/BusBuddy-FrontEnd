@@ -4,7 +4,7 @@ import 'package:busbuddy_frontend/models/bus_schedule.dart'; // Adjust import pa
 
 Future<List<BusSchedule>> fetchBusSchedules() async {
   final response = await http.get(Uri.parse(
-      'http://192.168.8.101:8080/bus/schedules')); // Use correct IP and port
+      'https://busbuddy.ngrok.app/bus/schedules')); // Use correct IP and port
 
   if (response.statusCode == 200) {
     List<dynamic> schedulesJson = jsonDecode(response.body);

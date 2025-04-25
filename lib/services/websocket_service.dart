@@ -13,7 +13,7 @@ void connectWebSocket({
 }) {
   stompClient = StompClient(
     config: StompConfig.SockJS(
-      url: 'http://192.168.8.101:8080/ws-location',
+      url: 'https://busbuddy.ngrok.app/ws-location',
       onConnect: (StompFrame frame) {
         print("✅ WebSocket connected");
 

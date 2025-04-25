@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:busbuddy_frontend/bus_map_page.dart'; // Update the path if needed
+import 'package:busbuddy_frontend/bus_map_page.dart';
 
 class ActiveBusesPage extends StatefulWidget {
   const ActiveBusesPage({super.key});
@@ -13,39 +13,43 @@ class ActiveBusesPage extends StatefulWidget {
 
 class _ActiveBusesPageState extends State<ActiveBusesPage> {
   List<Map<String, dynamic>> activeBuses = [];
-  Timer? _timer; // Timer for auto-refresh
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     fetchActiveBuses();
-    // Auto-refresh every 30 seconds (adjust as needed)
     _timer = Timer.periodic(
-        const Duration(seconds: 30), (Timer t) => fetchActiveBuses());
+      const Duration(seconds: 30),
+      (_) => fetchActiveBuses(),
+    );
   }
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancel timer to avoid memory leaks
+    _timer?.cancel();
     super.dispose();
   }
 
   Future<void> fetchActiveBuses() async {
-    final url = Uri.parse('http://192.168.8.101:8080/bus/active');
+    final url = Uri.parse('https://busbuddy.ngrok.app/bus/active');
+
     try {
       final response = await http.get(url);
+
       if (response.statusCode == 200) {
-        setState(() {
-          activeBuses =
-              List<Map<String, dynamic>>.from(jsonDecode(response.body));
-        });
+        final data = List<Map<String, dynamic>>.from(jsonDecode(response.body));
+        if (!mounted) return;
+        setState(() => activeBuses = data);
       } else {
+        if (!mounted) return;
         setState(() => activeBuses = []);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to fetch active buses")),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => activeBuses = []);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
@@ -57,7 +61,6 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      // Transparent AppBar with white icon theme (affecting the back button)
       appBar: AppBar(
         backgroundColor: Colors.black.withOpacity(0.5),
         elevation: 0,
@@ -65,10 +68,7 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Active Buses",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -79,7 +79,6 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
         ],
       ),
       body: Container(
-        // Dark gradient background for a futuristic vibe
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
@@ -99,13 +98,10 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                 )
               : ListView.builder(
                   padding: const EdgeInsets.only(
-                    top: kToolbarHeight + 60,
-                    bottom: 20,
-                  ),
+                      top: kToolbarHeight + 60, bottom: 20),
                   itemCount: activeBuses.length,
                   itemBuilder: (context, index) {
                     final bus = activeBuses[index];
-                    // Get the first route if available
                     final route = (bus['routes'] as List?)?.isNotEmpty == true
                         ? bus['routes'][0]
                         : null;
@@ -127,7 +123,7 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                                   latitude: location['latitude'],
                                   longitude: location['longitude'],
                                   busId: busId,
-                                  companyId: bus['companyId'], // pass companyId
+                                  companyId: bus['companyId'],
                                 ),
                               ),
                             );
@@ -145,8 +141,7 @@ class _ActiveBusesPageState extends State<ActiveBusesPage> {
                             color: Colors.white.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                            ),
+                                color: Colors.white.withOpacity(0.2)),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.3),

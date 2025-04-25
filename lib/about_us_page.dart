@@ -12,7 +12,7 @@ class AboutUsPage extends StatelessWidget {
       ),
       body: Center(
         child: const Text(
-          'Information about the app and the company.',
+          'Ranindu Amarasinghe.',
           style: TextStyle(fontSize: 20),
         ),
       ),

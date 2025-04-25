@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -25,6 +26,7 @@ class BusMapPage extends StatefulWidget {
 class _BusMapPageState extends State<BusMapPage> {
   late GoogleMapController _mapController;
   LatLng? _currentPosition;
+  Timer? _locationTimer;
 
   @override
   void initState() {
@@ -48,17 +50,23 @@ class _BusMapPageState extends State<BusMapPage> {
         }
       },
     );
+
+    _locationTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => _refreshLocation(),
+    );
   }
 
   @override
   void dispose() {
+    _locationTimer?.cancel();
     stompClient.deactivate();
     super.dispose();
   }
 
   Future<void> _refreshLocation() async {
     final url =
-        Uri.parse("http://192.168.8.100:8080/bus/details/${widget.busId}");
+        Uri.parse("https://busbuddy.ngrok.app/bus/details/${widget.busId}");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -77,122 +85,79 @@ class _BusMapPageState extends State<BusMapPage> {
         }
       }
     } catch (e) {
-      print("Error refreshing location: $e");
+      debugPrint("Error refreshing location: $e");
     }
   }
 
-  void _showAlertForm({required String type}) {
+  void _showAlertDialog(String type) {
     final nameController = TextEditingController();
     final contactController = TextEditingController();
     final messageController = TextEditingController();
 
-    bool isSubmitting = false;
-    String? nameError;
-    String? contactError;
-
-    String labelText = type == "MissingItem"
-        ? "What is your missing item?"
-        : "What is your complaint?";
-
     showDialog(
       context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: Text(
-              type == "MissingItem" ? "Missing Item Alert" : "Complaint",
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Your Name *',
-                      errorText: nameError,
-                    ),
-                  ),
-                  TextField(
-                    controller: contactController,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      labelText: 'Contact Number *',
-                      errorText: contactError,
-                    ),
-                  ),
-                  TextField(
-                    controller: messageController,
-                    decoration: InputDecoration(
-                      labelText: labelText,
-                    ),
-                  ),
-                  if (isSubmitting)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 16.0),
-                      child: CircularProgressIndicator(),
-                    ),
-                ],
+      builder: (context) => AlertDialog(
+        title: Text(
+            type == 'MissingItem' ? 'Report Missing Item' : 'File a Complaint'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Your Name'),
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isSubmitting
-                    ? null
-                    : () async {
-                        final name = nameController.text.trim();
-                        final contact = contactController.text.trim();
-
-                        // Validation
-                        setState(() {
-                          nameError = name.isEmpty ? "Name is required" : null;
-                          contactError = contact.isEmpty
-                              ? "Contact number is required"
-                              : (RegExp(r'^\d{10}$').hasMatch(contact)
-                                  ? null
-                                  : "Must be exactly 10 digits");
-                        });
-
-                        if (nameError != null || contactError != null) return;
-
-                        setState(() => isSubmitting = true);
-
-                        try {
-                          stompClient.send(
-                            destination: '/app/alert',
-                            body: jsonEncode({
-                              "busId": widget.busId,
-                              "companyId": widget.companyId,
-                              "senderName": name,
-                              "contactNumber": contact,
-                              "message": messageController.text.trim(),
-                              "type": type,
-                            }),
-                          );
-
-                          await Future.delayed(
-                              const Duration(milliseconds: 500));
-                          Navigator.pop(context);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Alert sent successfully')),
-                          );
-                        } catch (e) {
-                          print("WebSocket send error: $e");
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Failed to send alert')),
-                          );
-                        } finally {
-                          setState(() => isSubmitting = false);
-                        }
-                      },
-                child: const Text("Submit"),
+              TextField(
+                controller: contactController,
+                decoration: const InputDecoration(labelText: 'Contact Number'),
+                keyboardType: TextInputType.phone,
+              ),
+              TextField(
+                controller: messageController,
+                decoration: InputDecoration(
+                  labelText: type == 'MissingItem'
+                      ? 'What did you lose?'
+                      : 'What is your complaint?',
+                ),
+                maxLines: 3,
               ),
             ],
-          );
-        },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (nameController.text.isEmpty ||
+                  contactController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Please fill all required fields')),
+                );
+                return;
+              }
+
+              stompClient.send(
+                destination: '/app/alert',
+                body: jsonEncode({
+                  "busId": widget.busId,
+                  "companyId": widget.companyId,
+                  "senderName": nameController.text,
+                  "contactNumber": contactController.text,
+                  "message": messageController.text,
+                  "type": type,
+                }),
+              );
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Message sent successfully')),
+              );
+            },
+            child: const Text('Send'),
+          ),
+        ],
       ),
     );
   }
@@ -200,14 +165,13 @@ class _BusMapPageState extends State<BusMapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text("Bus Location"),
+        title: const Text("Live Bus Tracker"),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _refreshLocation,
-          ),
+          )
         ],
       ),
       body: Column(
@@ -224,8 +188,8 @@ class _BusMapPageState extends State<BusMapPage> {
                       Marker(
                         markerId: const MarkerId("bus"),
                         position: _currentPosition!,
-                        infoWindow: const InfoWindow(title: "Bus"),
-                      ),
+                        infoWindow: const InfoWindow(title: "Bus Location"),
+                      )
                     },
                     onMapCreated: (controller) {
                       _mapController = controller;
@@ -233,46 +197,33 @@ class _BusMapPageState extends State<BusMapPage> {
                   ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _showAlertForm(type: "MissingItem"),
-                    icon: const Icon(Icons.warning_amber_rounded,
-                        color: Colors.white),
-                    label: const Text("Missing Item"),
+                    icon: const Icon(Icons.report_problem),
+                    label: const Text("Complaint"),
+                    onPressed: () => _showAlertDialog("Complaint"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      backgroundColor: Colors.redAccent,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _showAlertForm(type: "Complaint"),
-                    icon: const Icon(Icons.report_problem, color: Colors.white),
-                    label: const Text("Complaint"),
+                    icon: const Icon(Icons.warning),
+                    label: const Text("Missing Item"),
+                    onPressed: () => _showAlertDialog("MissingItem"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      backgroundColor: Colors.orangeAccent,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
         ],
       ),
     );
