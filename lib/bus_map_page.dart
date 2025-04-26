@@ -24,14 +24,16 @@ class BusMapPage extends StatefulWidget {
 }
 
 class _BusMapPageState extends State<BusMapPage> {
-  late GoogleMapController _mapController;
+  GoogleMapController? _mapController;
   LatLng? _currentPosition;
   Timer? _locationTimer;
+  Set<Marker> _markers = {};
 
   @override
   void initState() {
     super.initState();
     _currentPosition = LatLng(widget.latitude, widget.longitude);
+    _updateMarker(_currentPosition!);
 
     connectWebSocket(
       busId: widget.busId,
@@ -41,27 +43,33 @@ class _BusMapPageState extends State<BusMapPage> {
         final lng = location['longitude'];
 
         if (lat != null && lng != null) {
-          setState(() {
-            _currentPosition = LatLng(lat, lng);
-            _mapController.animateCamera(
-              CameraUpdate.newLatLng(_currentPosition!),
-            );
-          });
+          final newPosition = LatLng(lat, lng);
+          _updateMarker(newPosition);
+
+          if (_mapController != null) {
+            _mapController!.animateCamera(CameraUpdate.newLatLng(newPosition));
+          }
         }
       },
     );
 
     _locationTimer = Timer.periodic(
-      const Duration(seconds: 2),
+      const Duration(seconds: 5),
       (_) => _refreshLocation(),
     );
   }
 
-  @override
-  void dispose() {
-    _locationTimer?.cancel();
-    stompClient.deactivate();
-    super.dispose();
+  void _updateMarker(LatLng position) {
+    setState(() {
+      _currentPosition = position;
+      _markers = {
+        Marker(
+          markerId: const MarkerId("bus"),
+          position: position,
+          infoWindow: const InfoWindow(title: "Bus Location"),
+        ),
+      };
+    });
   }
 
   Future<void> _refreshLocation() async {
@@ -75,13 +83,13 @@ class _BusMapPageState extends State<BusMapPage> {
         if (location != null &&
             location['latitude'] != null &&
             location['longitude'] != null) {
-          setState(() {
-            _currentPosition =
-                LatLng(location['latitude'], location['longitude']);
-            _mapController.animateCamera(
-              CameraUpdate.newLatLng(_currentPosition!),
-            );
-          });
+          final newPosition =
+              LatLng(location['latitude'], location['longitude']);
+          _updateMarker(newPosition);
+
+          if (_mapController != null) {
+            _mapController!.animateCamera(CameraUpdate.newLatLng(newPosition));
+          }
         }
       }
     } catch (e) {
@@ -89,75 +97,131 @@ class _BusMapPageState extends State<BusMapPage> {
     }
   }
 
+  @override
+  void dispose() {
+    _locationTimer?.cancel();
+    stompClient.deactivate();
+    super.dispose();
+  }
+
   void _showAlertDialog(String type) {
     final nameController = TextEditingController();
     final contactController = TextEditingController();
     final messageController = TextEditingController();
 
+    bool isSending = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-            type == 'MissingItem' ? 'Report Missing Item' : 'File a Complaint'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Your Name'),
-              ),
-              TextField(
-                controller: contactController,
-                decoration: const InputDecoration(labelText: 'Contact Number'),
-                keyboardType: TextInputType.phone,
-              ),
-              TextField(
-                controller: messageController,
-                decoration: InputDecoration(
-                  labelText: type == 'MissingItem'
-                      ? 'What did you lose?'
-                      : 'What is your complaint?',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(
+            type == 'MissingItem' ? 'Report Missing Item' : 'File a Complaint',
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Your Name'),
                 ),
-                maxLines: 3,
-              ),
-            ],
+                const SizedBox(height: 10),
+                TextField(
+                  controller: contactController,
+                  decoration:
+                      const InputDecoration(labelText: 'Contact Number'),
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: messageController,
+                  decoration: InputDecoration(
+                    labelText: type == 'MissingItem'
+                        ? 'What did you lose?'
+                        : 'What is your complaint?',
+                  ),
+                  maxLines: 3,
+                ),
+                if (isSending)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: CircularProgressIndicator(),
+                  ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isEmpty ||
-                  contactController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Please fill all required fields')),
-                );
-                return;
-              }
+          actions: [
+            TextButton(
+              onPressed: isSending ? null : () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: isSending
+                  ? null
+                  : () async {
+                      if (nameController.text.isEmpty ||
+                          contactController.text.isEmpty) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Please fill all required fields')),
+                          );
+                        }
+                        return;
+                      }
 
-              stompClient.send(
-                destination: '/app/alert',
-                body: jsonEncode({
-                  "busId": widget.busId,
-                  "companyId": widget.companyId,
-                  "senderName": nameController.text,
-                  "contactNumber": contactController.text,
-                  "message": messageController.text,
-                  "type": type,
-                }),
-              );
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Message sent successfully')),
-              );
-            },
-            child: const Text('Send'),
-          ),
-        ],
+                      setState(() => isSending = true);
+
+                      try {
+                        if (stompClient.connected) {
+                          stompClient.send(
+                            destination: '/app/alert',
+                            body: jsonEncode({
+                              "busId": widget.busId,
+                              "companyId": widget.companyId,
+                              "senderName": nameController.text.trim(),
+                              "contactNumber": contactController.text.trim(),
+                              "message": messageController.text.trim(),
+                              "type": type,
+                            }),
+                          );
+
+                          await Future.delayed(
+                              const Duration(milliseconds: 500));
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Message sent successfully')),
+                            );
+                          }
+                        } else {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Connection lost. Please try again')),
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        debugPrint('Send error: $e');
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Failed to send message')),
+                          );
+                        }
+                      } finally {
+                        if (mounted) setState(() => isSending = false);
+                      }
+                    },
+              child: const Text('Send'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -174,57 +238,53 @@ class _BusMapPageState extends State<BusMapPage> {
           )
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _currentPosition == null
-                ? const Center(child: CircularProgressIndicator())
-                : GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: _currentPosition!,
-                      zoom: 15,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: _currentPosition == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : GoogleMap(
+                      initialCameraPosition: CameraPosition(
+                        target: _currentPosition!,
+                        zoom: 15,
+                      ),
+                      markers: _markers,
+                      onMapCreated: (controller) {
+                        _mapController = controller;
+                      },
                     ),
-                    markers: {
-                      Marker(
-                        markerId: const MarkerId("bus"),
-                        position: _currentPosition!,
-                        infoWindow: const InfoWindow(title: "Bus Location"),
-                      )
-                    },
-                    onMapCreated: (controller) {
-                      _mapController = controller;
-                    },
-                  ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.report_problem),
-                    label: const Text("Complaint"),
-                    onPressed: () => _showAlertDialog("Complaint"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.warning),
-                    label: const Text("Missing Item"),
-                    onPressed: () => _showAlertDialog("MissingItem"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
-                    ),
-                  ),
-                ),
-              ],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.report_problem),
+                      label: const Text("Complaint"),
+                      onPressed: () => _showAlertDialog("Complaint"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.warning),
+                      label: const Text("Missing Item"),
+                      onPressed: () => _showAlertDialog("MissingItem"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orangeAccent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
